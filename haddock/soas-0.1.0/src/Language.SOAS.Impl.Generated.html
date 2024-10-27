@@ -1,0 +1,1058 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_GHC -Wno-orphans -Wno-redundant-constraints #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds         #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts         #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables         #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies         #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric         #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE StandaloneDeriving         #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE DeriveTraversable #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE GADTs             #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures    #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase        #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE PatternSynonyms   #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes        #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE TemplateHaskell   #-}</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Language.SOAS.Impl.Generated</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bifunctor.TH</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">IsString</span></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Foil</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Foil</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Monad.Free.Foil.TH.MkFreeFoil</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Monad.Free.Foil</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html"><span class="hs-identifier">Language.SOAS.Syntax.Abs</span></a></span><span>    </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Raw</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Lex.html"><span class="hs-identifier">Language.SOAS.Syntax.Lex</span></a></span><span>    </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Raw</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Par.html"><span class="hs-identifier">Language.SOAS.Syntax.Par</span></a></span><span>    </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Raw</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Print.html"><span class="hs-identifier">Language.SOAS.Syntax.Print</span></a></span><span>  </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Raw</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Free.Foil.Generic</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Generics.Kind.TH</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">deriveGenericK</span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Language.SOAS.FreeFoilConfig.html"><span class="hs-identifier">Language.SOAS.FreeFoilConfig</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.FreeFoilConfig.html#soasConfig"><span class="hs-identifier">soasConfig</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- $setup</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- &gt;&gt;&gt; :set -XOverloadedStrings</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- &gt;&gt;&gt; :set -XDataKinds</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- &gt;&gt;&gt; import qualified Control.Monad.Foil as Foil</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- &gt;&gt;&gt; import qualified Language.SOAS.Syntax.Abs as Raw</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- &gt;&gt;&gt; import Control.Monad.Free.Foil</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- &gt;&gt;&gt; import Data.String (fromString)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><span class="hs-comment">-- * Generated code</span></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span id="ScopedOpArgTyping%27Sig"><span id="OpArgTyping%27Sig"><span id="Type%27Sig"><span id="OpArg%27Sig"><span id="Term%27Sig"><span id="local-6989586621679421615"><span id="local-6989586621679421616"><span id="ScopedOpArgTyping%27"><span id="OpArgTyping%27"><span id="local-6989586621679421621"><span id="local-6989586621679421622"><span id="Type%27"><span id="local-6989586621679421626"><span id="local-6989586621679421627"><span id="local-6989586621679421630"><span id="local-6989586621679421631"><span id="OpArg%27"><span id="Term%27"><span id="local-6989586621679421636"><span id="local-6989586621679421637"><span id="Binders%27"><span id="local-6989586621679421641"><span id="local-6989586621679421642"><span id="local-6989586621679421646"><span id="TypeBinders%27"><span id="local-6989586621679421664"><span id="local-6989586621679421672"><span id="local-6989586621679421673"><span id="local-6989586621679421674"><span id="local-6989586621679421675"><span id="local-6989586621679421676"><span id="local-6989586621679421677"><span id="local-6989586621679421678"><span id="local-6989586621679421679"><span id="local-6989586621679421680"><span id="local-6989586621679421681"><span id="local-6989586621679421682"><span id="local-6989586621679421683"><span id="local-6989586621679421684"><span id="local-6989586621679421685"><span id="local-6989586621679421707"><span id="local-6989586621679421708"><span id="local-6989586621679421749"><span id="local-6989586621679421750"><span id="local-6989586621679421766"><span id="local-6989586621679421767"><span id="local-6989586621679421782"><span id="local-6989586621679421783"><span id="local-6989586621679421873"><span id="local-6989586621679421874"><span id="local-6989586621679421884"><span id="local-6989586621679421886"><span id="local-6989586621679421942"><span id="local-6989586621679421943"><span id="local-6989586621679421949"><span id="local-6989586621679421950"><span id="local-6989586621679422004"><span id="TermTyping%27"><span id="local-6989586621679422008"><span id="VarTyping%27"><span id="local-6989586621679422012"><span id="Constraint%27"><span id="local-6989586621679422016"><span id="OpTyping%27"><span id="local-6989586621679422020"><span id="MetaVarTyping%27"><span id="local-6989586621679422024"><span id="Subst%27"><span id="local-6989586621679422164"><span id="local-6989586621679422165"><span id="local-6989586621679422166"><span id="local-6989586621679422167"><span id="local-6989586621679422168"><span id="local-6989586621679422169"><span id="local-6989586621679422342"><span id="local-6989586621679422343"><span id="local-6989586621679422344"><span id="local-6989586621679422345"><span id="local-6989586621679422346"><span id="local-6989586621679422347"><span id="local-6989586621679422348"><span id="local-6989586621679422349"><span id="local-6989586621679422350"><span id="local-6989586621679422351"><span id="local-6989586621679422352"><span id="local-6989586621679422353"><span id="local-6989586621679422354"><span id="local-6989586621679422355"><span id="local-6989586621679422356"><span id="local-6989586621679422357"><span id="local-6989586621679422358"><span id="local-6989586621679422359"><span id="local-6989586621679422360"><span id="local-6989586621679422361"><span id="local-6989586621679422362"><span id="local-6989586621679422363"><span id="local-6989586621679422364"><span id="local-6989586621679422365"><span id="local-6989586621679422366"><span id="local-6989586621679422367"><span id="local-6989586621679422368"><span id="local-6989586621679422369"><span id="local-6989586621679422370"><span id="local-6989586621679422371"><span id="local-6989586621679422372"><span id="local-6989586621679422373"><span id="local-6989586621679422374"><span id="local-6989586621679422375"><span id="local-6989586621679422376"><span id="local-6989586621679422377"><span id="local-6989586621679422378"><span id="local-6989586621679422379"><span id="local-6989586621679422380"><span id="local-6989586621679422381"><span id="local-6989586621679422382"><span id="local-6989586621679422383"><span id="local-6989586621679422384"><span id="local-6989586621679422385"><span id="local-6989586621679422386"><span id="local-6989586621679422388"><span id="local-6989586621679422390"><span id="local-6989586621679422392"><span id="local-6989586621679422396"><span id="local-6989586621679422399"><span id="local-6989586621679422405"><span id="local-6989586621679422411"><span id="local-6989586621679422416"><span id="local-6989586621679422419"><span id="local-6989586621679422422"><span id="local-6989586621679422425"><span id="local-6989586621679422428"><span id="local-6989586621679422431"><span id="local-6989586621679422434"><span id="local-6989586621679422437"><span id="local-6989586621679422440"><span id="local-6989586621679422443"><span id="local-6989586621679422448"><span id="local-6989586621679422453"><span id="local-6989586621679422458"><span id="local-6989586621679422463"><span id="local-6989586621679422473"><span id="local-6989586621679422481"><span id="local-6989586621679422487"><span id="local-6989586621679422492"><span id="local-6989586621679422497"><span id="local-6989586621679422499"><span id="local-6989586621679422501"><span id="local-6989586621679422505"><span id="local-6989586621679422508"><span id="local-6989586621679422513"><span id="local-6989586621679422520"><span id="local-6989586621679422525"><span id="local-6989586621679422528"><span id="local-6989586621679422531"><span id="local-6989586621679422534"><span id="local-6989586621679422537"><span id="local-6989586621679422540"><span id="local-6989586621679422543"><span id="local-6989586621679422546"><span id="local-6989586621679422548"><span id="local-6989586621679422551"><span id="local-6989586621679422556"><span id="local-6989586621679422561"><span id="local-6989586621679422566"><span id="local-6989586621679422571"><span id="local-6989586621679422580"><span id="local-6989586621679422587"><span id="local-6989586621679422592"><span id="local-6989586621679422597"><span id="local-6989586621679422602"><span id="local-6989586621679422604"><span id="local-6989586621679422606"><span id="local-6989586621679422608"><span id="local-6989586621679422610"><span id="local-6989586621679422616"><span id="local-6989586621679422621"><span id="local-6989586621679422626"><span id="local-6989586621679422628"><span id="local-6989586621679422631"><span id="local-6989586621679422634"><span id="local-6989586621679422637"><span id="local-6989586621679422640"><span id="local-6989586621679422643"><span id="local-6989586621679422646"><span id="local-6989586621679422648"><span id="local-6989586621679422651"><span id="local-6989586621679422656"><span id="local-6989586621679422661"><span id="local-6989586621679422666"><span id="local-6989586621679422671"><span id="local-6989586621679422681"><span id="local-6989586621679422686"><span id="local-6989586621679422692"><span id="local-6989586621679422697"><span id="local-6989586621679422702"><span id="local-6989586621679422704"><span id="local-6989586621679422706"><span id="local-6989586621679422712"><span id="local-6989586621679422717"><span id="local-6989586621679422723"><span id="local-6989586621679422733"><span id="local-6989586621679422738"><span id="local-6989586621679422743"><span id="local-6989586621679422746"><span id="local-6989586621679422749"><span id="local-6989586621679422752"><span id="local-6989586621679422755"><span id="local-6989586621679422758"><span id="local-6989586621679422761"><span id="local-6989586621679422766"><span id="local-6989586621679422769"><span id="local-6989586621679422774"><span id="local-6989586621679422779"><span id="local-6989586621679422784"><span id="local-6989586621679422789"><span id="local-6989586621679422799"><span id="local-6989586621679422812"><span id="local-6989586621679422818"><span id="local-6989586621679422823"><span id="local-6989586621679422828"><span id="local-6989586621679422830"><span id="local-6989586621679422832"><span id="local-6989586621679422834"><span id="local-6989586621679422836"><span id="local-6989586621679422841"><span id="local-6989586621679422845"><span id="local-6989586621679422850"><span id="local-6989586621679422852"><span id="local-6989586621679422855"><span id="local-6989586621679422858"><span id="local-6989586621679422861"><span id="local-6989586621679422864"><span id="local-6989586621679422867"><span id="local-6989586621679422870"><span id="local-6989586621679422872"><span id="local-6989586621679422875"><span id="local-6989586621679422880"><span id="local-6989586621679422885"><span id="local-6989586621679422890"><span id="local-6989586621679422895"><span id="local-6989586621679422904"><span id="local-6989586621679422910"><span id="local-6989586621679422915"><span id="local-6989586621679422920"><span id="ScopedOpArgTypingSig"><span id="OpArgTypingSig"><span id="ScopedType%27"><span id="TypeFunSig"><span id="TypeProductSig"><span id="OpArgSig"><span id="PlainOpArgSig"><span id="ScopedTerm%27"><span id="OpSig"><span id="MetaVarSig"><span id="NoTypeBinders"><span id="SomeTypeBinders"><span id="NoBinders"><span id="SomeBinders"><span id="TermTyping"><span id="VarTyping"><span id="ConstraintEq"><span id="OpTyping"><span id="MetaVarTyping"><span id="Subst"><span id="ScopedOpArgTyping"><span id="OpArgTyping"><span id="TypeProduct"><span id="TypeFun"><span id="PlainOpArg"><span id="OpArg"><span id="MetaVar"><span id="Op"><span id="%24mScopedOpArgTyping"><span id="%24bScopedOpArgTyping"><span id="%24mOpArgTyping"><span id="%24bOpArgTyping"><span id="%24mTypeProduct"><span id="%24bTypeProduct"><span id="%24mTypeFun"><span id="%24bTypeFun"><span id="%24mPlainOpArg"><span id="%24bPlainOpArg"><span id="%24mOpArg"><span id="%24bOpArg"><span id="%24mMetaVar"><span id="%24bMetaVar"><span id="%24mOp"><span id="%24bOp"><span class="hs-identifier">mkFreeFoil</span><span> </span><span class="hs-identifier">soasConfig</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span id="local-6989586621679421630"><span id="RepK"><span id="local-6989586621679421707"><span id="local-6989586621679421708"><span id="local-6989586621679422981"><span id="local-6989586621679422983"><span id="local-6989586621679422985"><span id="local-6989586621679422987"><span id="local-6989586621679422989"><span id="local-6989586621679422991"><span id="local-6989586621679422993"><span id="local-6989586621679422995"><span class="hs-identifier">deriveGenericK</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">OpArg'Sig</span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-45"></span><span id="local-6989586621679421641"><span id="RepK"><span id="local-6989586621679421749"><span id="local-6989586621679421750"><span id="local-6989586621679423049"><span id="local-6989586621679423051"><span id="local-6989586621679423053"><span id="local-6989586621679423055"><span id="local-6989586621679423057"><span id="local-6989586621679423059"><span id="local-6989586621679423061"><span id="local-6989586621679423063"><span class="hs-identifier">deriveGenericK</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">Term'Sig</span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-46"></span><span id="local-6989586621679421621"><span id="RepK"><span id="local-6989586621679421766"><span id="local-6989586621679421767"><span id="local-6989586621679423125"><span id="local-6989586621679423127"><span id="local-6989586621679423129"><span id="local-6989586621679423131"><span id="local-6989586621679423133"><span id="local-6989586621679423135"><span id="local-6989586621679423137"><span id="local-6989586621679423139"><span class="hs-identifier">deriveGenericK</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">OpArgTyping'Sig</span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-47"></span><span id="local-6989586621679421626"><span id="RepK"><span id="local-6989586621679421782"><span id="local-6989586621679421783"><span id="local-6989586621679423177"><span id="local-6989586621679423179"><span id="local-6989586621679423181"><span id="local-6989586621679423183"><span id="local-6989586621679423185"><span id="local-6989586621679423187"><span id="local-6989586621679423189"><span id="local-6989586621679423191"><span class="hs-identifier">deriveGenericK</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">Type'Sig</span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span id="local-6989586621679421630"><span id="local-6989586621679423255"><span id="local-6989586621679423257"><span id="local-6989586621679423261"><span class="hs-identifier">deriveBifunctor</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">OpArg'Sig</span></span></span></span></span><span>
+</span><span id="line-50"></span><span id="local-6989586621679421641"><span id="local-6989586621679423276"><span id="local-6989586621679423281"><span id="local-6989586621679423285"><span class="hs-identifier">deriveBifunctor</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">Term'Sig</span></span></span></span></span><span>
+</span><span id="line-51"></span><span id="local-6989586621679421621"><span id="local-6989586621679423300"><span id="local-6989586621679423303"><span id="local-6989586621679423307"><span class="hs-identifier">deriveBifunctor</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">OpArgTyping'Sig</span></span></span></span></span><span>
+</span><span id="line-52"></span><span id="local-6989586621679421615"><span id="local-6989586621679423318"><span id="local-6989586621679423321"><span id="local-6989586621679423325"><span class="hs-identifier">deriveBifunctor</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">ScopedOpArgTyping'Sig</span></span></span></span></span><span>
+</span><span id="line-53"></span><span id="local-6989586621679421626"><span id="local-6989586621679423335"><span id="local-6989586621679423337"><span id="local-6989586621679423341"><span class="hs-identifier">deriveBifunctor</span><span> </span><span class="hs-special">''</span><span class="hs-identifier">Type'Sig</span></span></span></span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- FIXME: derive via GenericK</span><span>
+</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679421868"><span class="annot"><span class="hs-identifier hs-type">Foil.CoSinkable</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Binders%27"><span class="hs-identifier hs-type">Binders'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679421868"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span>  </span><span id="local-6989586621679423356"><span class="annot"><span class="annottext">coSinkabilityProof :: forall (n :: S) (n' :: S) (l :: S) r.
+(Name n -&gt; Name n')
+-&gt; Binders' a n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r)
+-&gt; r
+</span><a href="#local-6989586621679423356"><span class="hs-identifier hs-var hs-var hs-var hs-var">coSinkabilityProof</span></a></span></span><span> </span><span id="local-6989586621679423358"><span class="annot"><span class="annottext">Name n -&gt; Name n'
+</span><a href="#local-6989586621679423358"><span class="hs-identifier hs-var">rename</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#NoBinders"><span class="hs-identifier hs-type">NoBinders</span></a></span><span> </span><span id="local-6989586621679423360"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423360"><span class="hs-identifier hs-var">loc</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679423361"><span class="annot"><span class="annottext">forall (l' :: S). (Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423361"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Name l -&gt; Name n') -&gt; Binders' a n' n' -&gt; r
+forall (l' :: S). (Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423361"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">Name n -&gt; Name n'
+Name l -&gt; Name n'
+</span><a href="#local-6989586621679423358"><span class="hs-identifier hs-var">rename</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Binders' a n' n'
+forall a (o :: S). a -&gt; Binders' a o o
+</span><a href="Language.SOAS.Impl.Generated.html#NoBinders"><span class="hs-identifier hs-var">NoBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423360"><span class="hs-identifier hs-var">loc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-comment">-- coSinkabilityProof rename (OneBinder loc binder) cont =</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-comment">--   Foil.coSinkabilityProof rename binder $ \rename' binder' -&gt;</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-comment">--     cont rename' (OneBinder loc binder')</span><span>
+</span><span id="line-61"></span><span>  </span><span class="annot"><span class="hs-identifier hs-var">coSinkabilityProof</span></span><span> </span><span id="local-6989586621679423362"><span class="annot"><span class="annottext">Name n -&gt; Name n'
+</span><a href="#local-6989586621679423362"><span class="hs-identifier hs-var">rename</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#SomeBinders"><span class="hs-identifier hs-type">SomeBinders</span></a></span><span> </span><span id="local-6989586621679423365"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423365"><span class="hs-identifier hs-var">loc</span></a></span></span><span> </span><span id="local-6989586621679423366"><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423366"><span class="hs-identifier hs-var">binder</span></a></span></span><span> </span><span id="local-6989586621679423367"><span class="annot"><span class="annottext">Binders' a i1 l
+</span><a href="#local-6989586621679423367"><span class="hs-identifier hs-var">binders</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679423368"><span class="annot"><span class="annottext">forall (l' :: S). (Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423368"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">(Name n -&gt; Name n')
+-&gt; NameBinder n i1
+-&gt; (forall {l' :: S}.
+    (Name i1 -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+-&gt; r
+forall (n :: S) (n' :: S) (l :: S) r.
+(Name n -&gt; Name n')
+-&gt; NameBinder n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (n :: S) (n' :: S) (l :: S) r.
+CoSinkable pattern =&gt;
+(Name n -&gt; Name n')
+-&gt; pattern n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; pattern n' l' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.coSinkabilityProof</span></span><span> </span><span class="annot"><span class="annottext">Name n -&gt; Name n'
+</span><a href="#local-6989586621679423362"><span class="hs-identifier hs-var">rename</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423366"><span class="hs-identifier hs-var">binder</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {l' :: S}. (Name i1 -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+ -&gt; r)
+-&gt; (forall {l' :: S}.
+    (Name i1 -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423370"><span class="annot"><span class="annottext">Name i1 -&gt; Name l'
+</span><a href="#local-6989586621679423370"><span class="hs-identifier hs-var">rename'</span></a></span></span><span> </span><span id="local-6989586621679423371"><span class="annot"><span class="annottext">NameBinder n' l'
+</span><a href="#local-6989586621679423371"><span class="hs-identifier hs-var">binder'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-63"></span><span>      </span><span class="annot"><span class="annottext">(Name i1 -&gt; Name l')
+-&gt; Binders' a i1 l
+-&gt; (forall {l' :: S}. (Name l -&gt; Name l') -&gt; Binders' a l' l' -&gt; r)
+-&gt; r
+forall (n :: S) (n' :: S) (l :: S) r.
+(Name n -&gt; Name n')
+-&gt; Binders' a n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (n :: S) (n' :: S) (l :: S) r.
+CoSinkable pattern =&gt;
+(Name n -&gt; Name n')
+-&gt; pattern n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; pattern n' l' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.coSinkabilityProof</span></span><span> </span><span class="annot"><span class="annottext">Name i1 -&gt; Name l'
+</span><a href="#local-6989586621679423370"><span class="hs-identifier hs-var">rename'</span></a></span><span> </span><span class="annot"><span class="annottext">Binders' a i1 l
+</span><a href="#local-6989586621679423367"><span class="hs-identifier hs-var">binders</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {l' :: S}. (Name l -&gt; Name l') -&gt; Binders' a l' l' -&gt; r)
+ -&gt; r)
+-&gt; (forall {l' :: S}. (Name l -&gt; Name l') -&gt; Binders' a l' l' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423372"><span class="annot"><span class="annottext">Name l -&gt; Name l'
+</span><a href="#local-6989586621679423372"><span class="hs-identifier hs-var">rename''</span></a></span></span><span> </span><span id="local-6989586621679423373"><span class="annot"><span class="annottext">Binders' a l' l'
+</span><a href="#local-6989586621679423373"><span class="hs-identifier hs-var">binders'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">(Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r
+forall (l' :: S). (Name l -&gt; Name l') -&gt; Binders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423368"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">Name l -&gt; Name l'
+</span><a href="#local-6989586621679423372"><span class="hs-identifier hs-var">rename''</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; NameBinder n' l' -&gt; Binders' a l' l' -&gt; Binders' a n' l'
+forall a (o :: S) (i1 :: S) (i2 :: S).
+a -&gt; NameBinder o i1 -&gt; Binders' a i1 i2 -&gt; Binders' a o i2
+</span><a href="Language.SOAS.Impl.Generated.html#SomeBinders"><span class="hs-identifier hs-var">SomeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423365"><span class="hs-identifier hs-var">loc</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder n' l'
+</span><a href="#local-6989586621679423371"><span class="hs-identifier hs-var">binder'</span></a></span><span> </span><span class="annot"><span class="annottext">Binders' a l' l'
+</span><a href="#local-6989586621679423373"><span class="hs-identifier hs-var">binders'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span>  </span><span id="local-6989586621679423375"><span class="annot"><span class="annottext">withPattern :: forall (o :: S) (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+Distinct o =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; Binders' a n l
+-&gt; (forall (o' :: S).
+    DExt o o' =&gt;
+    f n l o o' -&gt; Binders' a o o' -&gt; r)
+-&gt; r
+</span><a href="#local-6989586621679423375"><span class="hs-identifier hs-var hs-var hs-var hs-var">withPattern</span></a></span></span><span> </span><span id="local-6989586621679423377"><span class="annot"><span class="annottext">forall (x :: S) (y :: S) (z :: S) r'.
+Distinct z =&gt;
+Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+</span><a href="#local-6989586621679423377"><span class="hs-identifier hs-var">withBinder</span></a></span></span><span> </span><span id="local-6989586621679423378"><span class="annot"><span class="annottext">forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423378"><span class="hs-keyword hs-var">unit</span></a></span></span><span> </span><span id="local-6989586621679423379"><span class="annot"><span class="annottext">forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423379"><span class="hs-identifier hs-var">comp</span></a></span></span><span> </span><span id="local-6989586621679423380"><span class="annot"><span class="annottext">Scope o
+</span><a href="#local-6989586621679423380"><span class="hs-identifier hs-var">scope</span></a></span></span><span> </span><span id="local-6989586621679423381"><span class="annot"><span class="annottext">Binders' a n l
+</span><a href="#local-6989586621679423381"><span class="hs-identifier hs-var">binders</span></a></span></span><span> </span><span id="local-6989586621679423382"><span class="annot"><span class="annottext">forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; Binders' a o o' -&gt; r
+</span><a href="#local-6989586621679423382"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Binders' a n l
+</span><a href="#local-6989586621679423381"><span class="hs-identifier hs-var">binders</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-68"></span><span>      </span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#NoBinders"><span class="hs-identifier hs-type">NoBinders</span></a></span><span> </span><span id="local-6989586621679423389"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423389"><span class="hs-identifier hs-var">loc</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">f n l o o -&gt; Binders' a o o -&gt; r
+forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; Binders' a o o' -&gt; r
+</span><a href="#local-6989586621679423382"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">f n l o o
+f l l o o
+forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423378"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Binders' a o o
+forall a (o :: S). a -&gt; Binders' a o o
+</span><a href="Language.SOAS.Impl.Generated.html#NoBinders"><span class="hs-identifier hs-var">NoBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423389"><span class="hs-identifier hs-var">loc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>      </span><span class="hs-comment">-- OneBinder loc binder -&gt;</span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-comment">--   Foil.withPattern withBinder unit comp scope binder $ \f binder' -&gt;</span><span>
+</span><span id="line-71"></span><span>      </span><span class="hs-comment">--     cont f (OneBinder loc binder')</span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#SomeBinders"><span class="hs-identifier hs-type">SomeBinders</span></a></span><span> </span><span id="local-6989586621679423392"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423392"><span class="hs-identifier hs-var">loc</span></a></span></span><span> </span><span id="local-6989586621679423393"><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423393"><span class="hs-identifier hs-var">binder</span></a></span></span><span> </span><span id="local-6989586621679423394"><span class="annot"><span class="annottext">Binders' a i1 l
+</span><a href="#local-6989586621679423394"><span class="hs-identifier hs-var">moreBinders</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-73"></span><span>        </span><span class="annot"><span class="annottext">(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; NameBinder n i1
+-&gt; (forall {o' :: S}.
+    DExt o o' =&gt;
+    f n i1 o o' -&gt; NameBinder o o' -&gt; r)
+-&gt; r
+forall (o :: S) (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+Distinct o =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; NameBinder n l
+-&gt; (forall (o' :: S).
+    DExt o o' =&gt;
+    f n l o o' -&gt; NameBinder o o' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (o :: S)
+       (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+(CoSinkable pattern, Distinct o) =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; pattern n l
+-&gt; (forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; pattern o o' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.withPattern</span></span><span> </span><span class="annot"><span class="annottext">Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+forall (x :: S) (y :: S) (z :: S) r'.
+Distinct z =&gt;
+Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+</span><a href="#local-6989586621679423377"><span class="hs-identifier hs-var">withBinder</span></a></span><span> </span><span class="annot"><span class="annottext">f x x z z'
+forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423378"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="annot"><span class="annottext">f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423379"><span class="hs-identifier hs-var">comp</span></a></span><span> </span><span class="annot"><span class="annottext">Scope o
+</span><a href="#local-6989586621679423380"><span class="hs-identifier hs-var">scope</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423393"><span class="hs-identifier hs-var">binder</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {o' :: S}.
+  DExt o o' =&gt;
+  f n i1 o o' -&gt; NameBinder o o' -&gt; r)
+ -&gt; r)
+-&gt; (forall {o' :: S}.
+    DExt o o' =&gt;
+    f n i1 o o' -&gt; NameBinder o o' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423414"><span class="annot"><span class="annottext">f n i1 o o'
+</span><a href="#local-6989586621679423414"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679423415"><span class="annot"><span class="annottext">NameBinder o o'
+</span><a href="#local-6989586621679423415"><span class="hs-identifier hs-var">binder'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-74"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679423416"><span class="annot"><span class="annottext">scope' :: Scope o'
+</span><a href="#local-6989586621679423416"><span class="hs-identifier hs-var hs-var">scope'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NameBinder o o' -&gt; Scope o -&gt; Scope o'
+forall (n :: S) (pattern :: S -&gt; S -&gt; *) (l :: S).
+(Distinct n, CoSinkable pattern) =&gt;
+pattern n l -&gt; Scope n -&gt; Scope l
+</span><span class="hs-identifier hs-var">Foil.extendScopePattern</span></span><span> </span><span class="annot"><span class="annottext">NameBinder o o'
+</span><a href="#local-6989586621679423415"><span class="hs-identifier hs-var">binder'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope o
+</span><a href="#local-6989586621679423380"><span class="hs-identifier hs-var">scope</span></a></span><span>
+</span><span id="line-75"></span><span>           </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o'
+-&gt; Binders' a i1 l
+-&gt; (forall {o' :: S}.
+    DExt o' o' =&gt;
+    f i1 l o' o' -&gt; Binders' a o' o' -&gt; r)
+-&gt; r
+forall (o :: S) (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+Distinct o =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; Binders' a n l
+-&gt; (forall (o' :: S).
+    DExt o o' =&gt;
+    f n l o o' -&gt; Binders' a o o' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (o :: S)
+       (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+(CoSinkable pattern, Distinct o) =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; pattern n l
+-&gt; (forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; pattern o o' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.withPattern</span></span><span> </span><span class="annot"><span class="annottext">Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+forall (x :: S) (y :: S) (z :: S) r'.
+Distinct z =&gt;
+Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+</span><a href="#local-6989586621679423377"><span class="hs-identifier hs-var">withBinder</span></a></span><span> </span><span class="annot"><span class="annottext">f x x z z'
+forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423378"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="annot"><span class="annottext">f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423379"><span class="hs-identifier hs-var">comp</span></a></span><span> </span><span class="annot"><span class="annottext">Scope o'
+</span><a href="#local-6989586621679423416"><span class="hs-identifier hs-var">scope'</span></a></span><span> </span><span class="annot"><span class="annottext">Binders' a i1 l
+</span><a href="#local-6989586621679423394"><span class="hs-identifier hs-var">moreBinders</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {o' :: S}.
+  DExt o' o' =&gt;
+  f i1 l o' o' -&gt; Binders' a o' o' -&gt; r)
+ -&gt; r)
+-&gt; (forall {o' :: S}.
+    DExt o' o' =&gt;
+    f i1 l o' o' -&gt; Binders' a o' o' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423437"><span class="annot"><span class="annottext">f i1 l o' o'
+</span><a href="#local-6989586621679423437"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679423438"><span class="annot"><span class="annottext">Binders' a o' o'
+</span><a href="#local-6989586621679423438"><span class="hs-identifier hs-var">moreBinders'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-76"></span><span>                </span><span class="annot"><span class="annottext">f n l o o' -&gt; Binders' a o o' -&gt; r
+forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; Binders' a o o' -&gt; r
+</span><a href="#local-6989586621679423382"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">f n i1 o o' -&gt; f i1 l o' o' -&gt; f n l o o'
+forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423379"><span class="hs-identifier hs-var">comp</span></a></span><span> </span><span class="annot"><span class="annottext">f n i1 o o'
+</span><a href="#local-6989586621679423414"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">f i1 l o' o'
+</span><a href="#local-6989586621679423437"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; NameBinder o o' -&gt; Binders' a o' o' -&gt; Binders' a o o'
+forall a (o :: S) (i1 :: S) (i2 :: S).
+a -&gt; NameBinder o i1 -&gt; Binders' a i1 i2 -&gt; Binders' a o i2
+</span><a href="Language.SOAS.Impl.Generated.html#SomeBinders"><span class="hs-identifier hs-var">SomeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423392"><span class="hs-identifier hs-var">loc</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder o o'
+</span><a href="#local-6989586621679423415"><span class="hs-identifier hs-var">binder'</span></a></span><span> </span><span class="annot"><span class="annottext">Binders' a o' o'
+</span><a href="#local-6989586621679423438"><span class="hs-identifier hs-var">moreBinders'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- FIXME: derive via GenericK</span><span>
+</span><span id="line-79"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679421937"><span class="annot"><span class="hs-identifier hs-type">Foil.CoSinkable</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#TypeBinders%27"><span class="hs-identifier hs-type">TypeBinders'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679421937"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-80"></span><span>  </span><span id="local-6989586621679423442"><span class="annot"><span class="annottext">coSinkabilityProof :: forall (n :: S) (n' :: S) (l :: S) r.
+(Name n -&gt; Name n')
+-&gt; TypeBinders' a n l
+-&gt; (forall (l' :: S).
+    (Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">coSinkabilityProof</span></span></span><span> </span><span id="local-6989586621679423443"><span class="annot"><span class="annottext">Name n -&gt; Name n'
+</span><a href="#local-6989586621679423443"><span class="hs-identifier hs-var">rename</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#NoTypeBinders"><span class="hs-identifier hs-type">NoTypeBinders</span></a></span><span> </span><span id="local-6989586621679423445"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423445"><span class="hs-identifier hs-var">loc</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679423446"><span class="annot"><span class="annottext">forall (l' :: S). (Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423446"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Name l -&gt; Name n') -&gt; TypeBinders' a n' n' -&gt; r
+forall (l' :: S). (Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423446"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">Name n -&gt; Name n'
+Name l -&gt; Name n'
+</span><a href="#local-6989586621679423443"><span class="hs-identifier hs-var">rename</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; TypeBinders' a n' n'
+forall a (o :: S). a -&gt; TypeBinders' a o o
+</span><a href="Language.SOAS.Impl.Generated.html#NoTypeBinders"><span class="hs-identifier hs-var">NoTypeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423445"><span class="hs-identifier hs-var">loc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span>  </span><span class="annot"><span class="hs-identifier hs-var">coSinkabilityProof</span></span><span> </span><span id="local-6989586621679423447"><span class="annot"><span class="annottext">Name n -&gt; Name n'
+</span><a href="#local-6989586621679423447"><span class="hs-identifier hs-var">rename</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#SomeTypeBinders"><span class="hs-identifier hs-type">SomeTypeBinders</span></a></span><span> </span><span id="local-6989586621679423449"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423449"><span class="hs-identifier hs-var">loc</span></a></span></span><span> </span><span id="local-6989586621679423450"><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423450"><span class="hs-identifier hs-var">binder</span></a></span></span><span> </span><span id="local-6989586621679423451"><span class="annot"><span class="annottext">TypeBinders' a i1 l
+</span><a href="#local-6989586621679423451"><span class="hs-identifier hs-var">binders</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679423452"><span class="annot"><span class="annottext">forall (l' :: S). (Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423452"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><span class="annottext">(Name n -&gt; Name n')
+-&gt; NameBinder n i1
+-&gt; (forall {l' :: S}.
+    (Name i1 -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+-&gt; r
+forall (n :: S) (n' :: S) (l :: S) r.
+(Name n -&gt; Name n')
+-&gt; NameBinder n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (n :: S) (n' :: S) (l :: S) r.
+CoSinkable pattern =&gt;
+(Name n -&gt; Name n')
+-&gt; pattern n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; pattern n' l' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.coSinkabilityProof</span></span><span> </span><span class="annot"><span class="annottext">Name n -&gt; Name n'
+</span><a href="#local-6989586621679423447"><span class="hs-identifier hs-var">rename</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423450"><span class="hs-identifier hs-var">binder</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {l' :: S}. (Name i1 -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+ -&gt; r)
+-&gt; (forall {l' :: S}.
+    (Name i1 -&gt; Name l') -&gt; NameBinder n' l' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423454"><span class="annot"><span class="annottext">Name i1 -&gt; Name l'
+</span><a href="#local-6989586621679423454"><span class="hs-identifier hs-var">rename'</span></a></span></span><span> </span><span id="local-6989586621679423455"><span class="annot"><span class="annottext">NameBinder n' l'
+</span><a href="#local-6989586621679423455"><span class="hs-identifier hs-var">binder'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-83"></span><span>      </span><span class="annot"><span class="annottext">(Name i1 -&gt; Name l')
+-&gt; TypeBinders' a i1 l
+-&gt; (forall {l' :: S}.
+    (Name l -&gt; Name l') -&gt; TypeBinders' a l' l' -&gt; r)
+-&gt; r
+forall (n :: S) (n' :: S) (l :: S) r.
+(Name n -&gt; Name n')
+-&gt; TypeBinders' a n l
+-&gt; (forall (l' :: S).
+    (Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (n :: S) (n' :: S) (l :: S) r.
+CoSinkable pattern =&gt;
+(Name n -&gt; Name n')
+-&gt; pattern n l
+-&gt; (forall (l' :: S). (Name l -&gt; Name l') -&gt; pattern n' l' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.coSinkabilityProof</span></span><span> </span><span class="annot"><span class="annottext">Name i1 -&gt; Name l'
+</span><a href="#local-6989586621679423454"><span class="hs-identifier hs-var">rename'</span></a></span><span> </span><span class="annot"><span class="annottext">TypeBinders' a i1 l
+</span><a href="#local-6989586621679423451"><span class="hs-identifier hs-var">binders</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {l' :: S}.
+  (Name l -&gt; Name l') -&gt; TypeBinders' a l' l' -&gt; r)
+ -&gt; r)
+-&gt; (forall {l' :: S}.
+    (Name l -&gt; Name l') -&gt; TypeBinders' a l' l' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423456"><span class="annot"><span class="annottext">Name l -&gt; Name l'
+</span><a href="#local-6989586621679423456"><span class="hs-identifier hs-var">rename''</span></a></span></span><span> </span><span id="local-6989586621679423457"><span class="annot"><span class="annottext">TypeBinders' a l' l'
+</span><a href="#local-6989586621679423457"><span class="hs-identifier hs-var">binders'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-84"></span><span>        </span><span class="annot"><span class="annottext">(Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r
+forall (l' :: S). (Name l -&gt; Name l') -&gt; TypeBinders' a n' l' -&gt; r
+</span><a href="#local-6989586621679423452"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">Name l -&gt; Name l'
+</span><a href="#local-6989586621679423456"><span class="hs-identifier hs-var">rename''</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+-&gt; NameBinder n' l' -&gt; TypeBinders' a l' l' -&gt; TypeBinders' a n' l'
+forall a (o :: S) (i1 :: S) (i2 :: S).
+a -&gt; NameBinder o i1 -&gt; TypeBinders' a i1 i2 -&gt; TypeBinders' a o i2
+</span><a href="Language.SOAS.Impl.Generated.html#SomeTypeBinders"><span class="hs-identifier hs-var">SomeTypeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423449"><span class="hs-identifier hs-var">loc</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder n' l'
+</span><a href="#local-6989586621679423455"><span class="hs-identifier hs-var">binder'</span></a></span><span> </span><span class="annot"><span class="annottext">TypeBinders' a l' l'
+</span><a href="#local-6989586621679423457"><span class="hs-identifier hs-var">binders'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span>  </span><span id="local-6989586621679423459"><span class="annot"><span class="annottext">withPattern :: forall (o :: S) (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+Distinct o =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; TypeBinders' a n l
+-&gt; (forall (o' :: S).
+    DExt o o' =&gt;
+    f n l o o' -&gt; TypeBinders' a o o' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">withPattern</span></span></span><span> </span><span id="local-6989586621679423460"><span class="annot"><span class="annottext">forall (x :: S) (y :: S) (z :: S) r'.
+Distinct z =&gt;
+Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+</span><a href="#local-6989586621679423460"><span class="hs-identifier hs-var">withBinder</span></a></span></span><span> </span><span id="local-6989586621679423461"><span class="annot"><span class="annottext">forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423461"><span class="hs-keyword hs-var">unit</span></a></span></span><span> </span><span id="local-6989586621679423462"><span class="annot"><span class="annottext">forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423462"><span class="hs-identifier hs-var">comp</span></a></span></span><span> </span><span id="local-6989586621679423463"><span class="annot"><span class="annottext">Scope o
+</span><a href="#local-6989586621679423463"><span class="hs-identifier hs-var">scope</span></a></span></span><span> </span><span id="local-6989586621679423464"><span class="annot"><span class="annottext">TypeBinders' a n l
+</span><a href="#local-6989586621679423464"><span class="hs-identifier hs-var">binders</span></a></span></span><span> </span><span id="local-6989586621679423465"><span class="annot"><span class="annottext">forall (o' :: S).
+DExt o o' =&gt;
+f n l o o' -&gt; TypeBinders' a o o' -&gt; r
+</span><a href="#local-6989586621679423465"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">TypeBinders' a n l
+</span><a href="#local-6989586621679423464"><span class="hs-identifier hs-var">binders</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-88"></span><span>      </span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#NoTypeBinders"><span class="hs-identifier hs-type">NoTypeBinders</span></a></span><span> </span><span id="local-6989586621679423471"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423471"><span class="hs-identifier hs-var">loc</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">f n l o o -&gt; TypeBinders' a o o -&gt; r
+forall (o' :: S).
+DExt o o' =&gt;
+f n l o o' -&gt; TypeBinders' a o o' -&gt; r
+</span><a href="#local-6989586621679423465"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">f n l o o
+f l l o o
+forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423461"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; TypeBinders' a o o
+forall a (o :: S). a -&gt; TypeBinders' a o o
+</span><a href="Language.SOAS.Impl.Generated.html#NoTypeBinders"><span class="hs-identifier hs-var">NoTypeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423471"><span class="hs-identifier hs-var">loc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span>      </span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#SomeTypeBinders"><span class="hs-identifier hs-type">SomeTypeBinders</span></a></span><span> </span><span id="local-6989586621679423474"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423474"><span class="hs-identifier hs-var">loc</span></a></span></span><span> </span><span id="local-6989586621679423475"><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423475"><span class="hs-identifier hs-var">binder</span></a></span></span><span> </span><span id="local-6989586621679423476"><span class="annot"><span class="annottext">TypeBinders' a i1 l
+</span><a href="#local-6989586621679423476"><span class="hs-identifier hs-var">moreTypeBinders</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-90"></span><span>        </span><span class="annot"><span class="annottext">(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; NameBinder n i1
+-&gt; (forall {o' :: S}.
+    DExt o o' =&gt;
+    f n i1 o o' -&gt; NameBinder o o' -&gt; r)
+-&gt; r
+forall (o :: S) (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+Distinct o =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; NameBinder n l
+-&gt; (forall (o' :: S).
+    DExt o o' =&gt;
+    f n l o o' -&gt; NameBinder o o' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (o :: S)
+       (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+(CoSinkable pattern, Distinct o) =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; pattern n l
+-&gt; (forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; pattern o o' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.withPattern</span></span><span> </span><span class="annot"><span class="annottext">Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+forall (x :: S) (y :: S) (z :: S) r'.
+Distinct z =&gt;
+Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+</span><a href="#local-6989586621679423460"><span class="hs-identifier hs-var">withBinder</span></a></span><span> </span><span class="annot"><span class="annottext">f x x z z'
+forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423461"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="annot"><span class="annottext">f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423462"><span class="hs-identifier hs-var">comp</span></a></span><span> </span><span class="annot"><span class="annottext">Scope o
+</span><a href="#local-6989586621679423463"><span class="hs-identifier hs-var">scope</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder n i1
+</span><a href="#local-6989586621679423475"><span class="hs-identifier hs-var">binder</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {o' :: S}.
+  DExt o o' =&gt;
+  f n i1 o o' -&gt; NameBinder o o' -&gt; r)
+ -&gt; r)
+-&gt; (forall {o' :: S}.
+    DExt o o' =&gt;
+    f n i1 o o' -&gt; NameBinder o o' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423495"><span class="annot"><span class="annottext">f n i1 o o'
+</span><a href="#local-6989586621679423495"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679423496"><span class="annot"><span class="annottext">NameBinder o o'
+</span><a href="#local-6989586621679423496"><span class="hs-identifier hs-var">binder'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-91"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679423497"><span class="annot"><span class="annottext">scope' :: Scope o'
+</span><a href="#local-6989586621679423497"><span class="hs-identifier hs-var hs-var">scope'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NameBinder o o' -&gt; Scope o -&gt; Scope o'
+forall (n :: S) (pattern :: S -&gt; S -&gt; *) (l :: S).
+(Distinct n, CoSinkable pattern) =&gt;
+pattern n l -&gt; Scope n -&gt; Scope l
+</span><span class="hs-identifier hs-var">Foil.extendScopePattern</span></span><span> </span><span class="annot"><span class="annottext">NameBinder o o'
+</span><a href="#local-6989586621679423496"><span class="hs-identifier hs-var">binder'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope o
+</span><a href="#local-6989586621679423463"><span class="hs-identifier hs-var">scope</span></a></span><span>
+</span><span id="line-92"></span><span>           </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o'
+-&gt; TypeBinders' a i1 l
+-&gt; (forall {o' :: S}.
+    DExt o' o' =&gt;
+    f i1 l o' o' -&gt; TypeBinders' a o' o' -&gt; r)
+-&gt; r
+forall (o :: S) (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+Distinct o =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; TypeBinders' a n l
+-&gt; (forall (o' :: S).
+    DExt o o' =&gt;
+    f n l o o' -&gt; TypeBinders' a o o' -&gt; r)
+-&gt; r
+forall (pattern :: S -&gt; S -&gt; *) (o :: S)
+       (f :: S -&gt; S -&gt; S -&gt; S -&gt; *) (n :: S) (l :: S) r.
+(CoSinkable pattern, Distinct o) =&gt;
+(forall (x :: S) (y :: S) (z :: S) r'.
+ Distinct z =&gt;
+ Scope z
+ -&gt; NameBinder x y
+ -&gt; (forall (z' :: S).
+     DExt z z' =&gt;
+     f x y z z' -&gt; NameBinder z z' -&gt; r')
+ -&gt; r')
+-&gt; (forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z')
+-&gt; (forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S)
+           (z'' :: S).
+    (DExt z z', DExt z' z'') =&gt;
+    f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z'')
+-&gt; Scope o
+-&gt; pattern n l
+-&gt; (forall (o' :: S). DExt o o' =&gt; f n l o o' -&gt; pattern o o' -&gt; r)
+-&gt; r
+</span><span class="hs-identifier hs-var">Foil.withPattern</span></span><span> </span><span class="annot"><span class="annottext">Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+forall (x :: S) (y :: S) (z :: S) r'.
+Distinct z =&gt;
+Scope z
+-&gt; NameBinder x y
+-&gt; (forall (z' :: S).
+    DExt z z' =&gt;
+    f x y z z' -&gt; NameBinder z z' -&gt; r')
+-&gt; r'
+</span><a href="#local-6989586621679423460"><span class="hs-identifier hs-var">withBinder</span></a></span><span> </span><span class="annot"><span class="annottext">f x x z z'
+forall (x :: S) (z :: S) (z' :: S). DExt z z' =&gt; f x x z z'
+</span><a href="#local-6989586621679423461"><span class="hs-keyword hs-var">unit</span></a></span><span> </span><span class="annot"><span class="annottext">f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423462"><span class="hs-identifier hs-var">comp</span></a></span><span> </span><span class="annot"><span class="annottext">Scope o'
+</span><a href="#local-6989586621679423497"><span class="hs-identifier hs-var">scope'</span></a></span><span> </span><span class="annot"><span class="annottext">TypeBinders' a i1 l
+</span><a href="#local-6989586621679423476"><span class="hs-identifier hs-var">moreTypeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">((forall {o' :: S}.
+  DExt o' o' =&gt;
+  f i1 l o' o' -&gt; TypeBinders' a o' o' -&gt; r)
+ -&gt; r)
+-&gt; (forall {o' :: S}.
+    DExt o' o' =&gt;
+    f i1 l o' o' -&gt; TypeBinders' a o' o' -&gt; r)
+-&gt; r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679423517"><span class="annot"><span class="annottext">f i1 l o' o'
+</span><a href="#local-6989586621679423517"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679423518"><span class="annot"><span class="annottext">TypeBinders' a o' o'
+</span><a href="#local-6989586621679423518"><span class="hs-identifier hs-var">moreTypeBinders'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-93"></span><span>                </span><span class="annot"><span class="annottext">f n l o o' -&gt; TypeBinders' a o o' -&gt; r
+forall (o' :: S).
+DExt o o' =&gt;
+f n l o o' -&gt; TypeBinders' a o o' -&gt; r
+</span><a href="#local-6989586621679423465"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">f n i1 o o' -&gt; f i1 l o' o' -&gt; f n l o o'
+forall (x :: S) (y :: S) (y' :: S) (z :: S) (z' :: S) (z'' :: S).
+(DExt z z', DExt z' z'') =&gt;
+f x y z z' -&gt; f y y' z' z'' -&gt; f x y' z z''
+</span><a href="#local-6989586621679423462"><span class="hs-identifier hs-var">comp</span></a></span><span> </span><span class="annot"><span class="annottext">f n i1 o o'
+</span><a href="#local-6989586621679423495"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">f i1 l o' o'
+</span><a href="#local-6989586621679423517"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; NameBinder o o' -&gt; TypeBinders' a o' o' -&gt; TypeBinders' a o o'
+forall a (o :: S) (i1 :: S) (i2 :: S).
+a -&gt; NameBinder o i1 -&gt; TypeBinders' a i1 i2 -&gt; TypeBinders' a o i2
+</span><a href="Language.SOAS.Impl.Generated.html#SomeTypeBinders"><span class="hs-identifier hs-var">SomeTypeBinders</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679423474"><span class="hs-identifier hs-var">loc</span></a></span><span> </span><span class="annot"><span class="annottext">NameBinder o o'
+</span><a href="#local-6989586621679423496"><span class="hs-identifier hs-var">binder'</span></a></span><span> </span><span class="annot"><span class="annottext">TypeBinders' a o' o'
+</span><a href="#local-6989586621679423518"><span class="hs-identifier hs-var">moreTypeBinders'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span id="local-6989586621679421615"><span id="local-6989586621679421621"><span id="local-6989586621679421626"><span id="local-6989586621679421630"><span id="local-6989586621679421641"><span id="local-6989586621679421873"><span id="local-6989586621679421942"><span id="local-6989586621679421999"><span id="local-6989586621679422000"><span id="local-6989586621679422001"><span id="local-6989586621679422002"><span id="local-6989586621679422003"><span id="local-6989586621679422004"><span id="local-6989586621679422005"><span id="local-6989586621679422008"><span id="local-6989586621679422009"><span id="local-6989586621679422012"><span id="local-6989586621679422013"><span id="local-6989586621679422016"><span id="local-6989586621679422017"><span id="local-6989586621679422020"><span id="local-6989586621679422021"><span id="local-6989586621679422024"><span id="local-6989586621679422025"><span id="local-6989586621679422028"><span id="local-6989586621679422029"><span id="local-6989586621679422030"><span id="local-6989586621679422031"><span id="local-6989586621679422032"><span id="local-6989586621679422034"><span id="local-6989586621679422035"><span id="local-6989586621679422036"><span id="local-6989586621679422037"><span id="local-6989586621679422038"><span id="local-6989586621679422039"><span id="local-6989586621679422040"><span id="local-6989586621679422041"><span id="local-6989586621679422042"><span id="local-6989586621679422043"><span id="local-6989586621679422044"><span id="local-6989586621679422045"><span id="local-6989586621679422046"><span id="local-6989586621679422047"><span id="local-6989586621679422048"><span id="local-6989586621679422049"><span id="fromTerm%27Sig"><span id="fromOpArg%27Sig"><span id="fromBinders%27"><span id="fromOpArg%27"><span id="fromTerm%27"><span id="fromType%27Sig"><span id="fromOpArgTyping%27Sig"><span id="fromScopedOpArgTyping%27Sig"><span id="fromTypeBinders%27"><span id="fromOpArgTyping%27"><span id="fromScopedOpArgTyping%27"><span id="fromType%27"><span id="fromSubst%27"><span id="fromMetaVarTyping%27"><span id="fromOpTyping%27"><span id="fromConstraint%27"><span id="fromVarTyping%27"><span id="fromTermTyping%27"><span id="toTerm%27Sig"><span id="toOpArg%27Sig"><span id="toBinders%27"><span id="toOpArg%27"><span id="toTerm%27"><span id="toType%27Sig"><span id="toOpArgTyping%27Sig"><span id="toScopedOpArgTyping%27Sig"><span id="toTypeBinders%27"><span id="toOpArgTyping%27"><span id="toScopedOpArgTyping%27"><span id="toType%27"><span id="toSubst%27"><span id="toMetaVarTyping%27"><span id="toOpTyping%27"><span id="toConstraint%27"><span id="toVarTyping%27"><span id="toTermTyping%27"><span class="hs-identifier">mkFreeFoilConversions</span><span> </span><span class="hs-identifier">soasConfig</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="annot"><span class="hs-comment">-- | Ignore 'Raw.BNFC'Position' when matching terms.</span></span><span>
+</span><span id="line-98"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#BNFC%27Position"><span class="hs-identifier hs-type">Raw.BNFC'Position</span></a></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679423952"><span class="annot"><span class="annottext">zipMatchWithK :: forall (as :: LoT (*)) (bs :: LoT (*)) (cs :: LoT (*)).
+Mappings as bs cs
+-&gt; (BNFC'Position :@@: as)
+-&gt; (BNFC'Position :@@: bs)
+-&gt; Maybe (BNFC'Position :@@: cs)
+</span><a href="#local-6989586621679423952"><span class="hs-identifier hs-var hs-var hs-var hs-var">zipMatchWithK</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mappings as bs cs
+-&gt; BNFC'Position -&gt; BNFC'Position -&gt; Maybe BNFC'Position
+Mappings as bs cs
+-&gt; (BNFC'Position :@@: as)
+-&gt; (BNFC'Position :@@: bs)
+-&gt; Maybe (BNFC'Position :@@: cs)
+forall {k} (as :: LoT k) (bs :: LoT k) (cs :: LoT k) a.
+Mappings as bs cs -&gt; a -&gt; a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">zipMatchViaChooseLeft</span></span><span>
+</span><span id="line-99"></span><span class="annot"><span class="hs-comment">-- | Match 'Raw.OpIdent' via 'Eq'.</span></span><span>
+</span><span id="line-100"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#OpIdent"><span class="hs-identifier hs-type">Raw.OpIdent</span></a></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679423960"><span class="annot"><span class="annottext">zipMatchWithK :: forall (as :: LoT (*)) (bs :: LoT (*)) (cs :: LoT (*)).
+Mappings as bs cs
+-&gt; (OpIdent :@@: as)
+-&gt; (OpIdent :@@: bs)
+-&gt; Maybe (OpIdent :@@: cs)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">zipMatchWithK</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mappings as bs cs
+-&gt; (OpIdent :@@: as)
+-&gt; (OpIdent :@@: bs)
+-&gt; Maybe (OpIdent :@@: cs)
+Mappings as bs cs -&gt; OpIdent -&gt; OpIdent -&gt; Maybe OpIdent
+forall {k} a (as :: LoT k) (bs :: LoT k) (cs :: LoT k).
+Eq a =&gt;
+Mappings as bs cs -&gt; a -&gt; a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">zipMatchViaEq</span></span><span>
+</span><span id="line-101"></span><span class="annot"><span class="hs-comment">-- | Match 'Raw.MetaVarIdent' via 'Eq'.</span></span><span>
+</span><span id="line-102"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#MetaVarIdent"><span class="hs-identifier hs-type">Raw.MetaVarIdent</span></a></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679423967"><span class="annot"><span class="annottext">zipMatchWithK :: forall (as :: LoT (*)) (bs :: LoT (*)) (cs :: LoT (*)).
+Mappings as bs cs
+-&gt; (MetaVarIdent :@@: as)
+-&gt; (MetaVarIdent :@@: bs)
+-&gt; Maybe (MetaVarIdent :@@: cs)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">zipMatchWithK</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mappings as bs cs
+-&gt; (MetaVarIdent :@@: as)
+-&gt; (MetaVarIdent :@@: bs)
+-&gt; Maybe (MetaVarIdent :@@: cs)
+Mappings as bs cs
+-&gt; MetaVarIdent -&gt; MetaVarIdent -&gt; Maybe MetaVarIdent
+forall {k} a (as :: LoT k) (bs :: LoT k) (cs :: LoT k).
+Eq a =&gt;
+Mappings as bs cs -&gt; a -&gt; a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">zipMatchViaEq</span></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422265"><span id="local-6989586621679423970"><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="#local-6989586621679422265"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Term%27Sig"><span class="hs-identifier hs-type">Term'Sig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422265"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-105"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422264"><span id="local-6989586621679424029"><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="#local-6989586621679422264"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#OpArg%27Sig"><span class="hs-identifier hs-type">OpArg'Sig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422264"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422274"><span id="local-6989586621679424059"><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="#local-6989586621679422274"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Type%27Sig"><span class="hs-identifier hs-type">Type'Sig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422274"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422282"><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="#local-6989586621679422282"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatch</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Term%27Sig"><span class="hs-identifier hs-type">Term'Sig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422282"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424131"><span class="annot"><span class="annottext">zipMatch :: forall scope term scope' term'.
+Term'Sig a scope term
+-&gt; Term'Sig a scope' term'
+-&gt; Maybe (Term'Sig a (scope, scope') (term, term'))
+</span><a href="#local-6989586621679424131"><span class="hs-identifier hs-var hs-var hs-var hs-var">zipMatch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Term'Sig a scope term
+-&gt; Term'Sig a scope' term'
+-&gt; Maybe (Term'Sig a (scope, scope') (term, term'))
+forall (sig :: * -&gt; * -&gt; *) scope scope' term term'.
+(GenericK sig, GZipMatch (RepK sig),
+ ReqsZipMatch
+   (RepK sig)
+   (scope ':&amp;&amp;: (term ':&amp;&amp;: 'LoT0))
+   (scope' ':&amp;&amp;: (term' ':&amp;&amp;: 'LoT0))) =&gt;
+sig scope term
+-&gt; sig scope' term' -&gt; Maybe (sig (scope, scope') (term, term'))
+</span><span class="hs-identifier hs-var">genericZipMatch2</span></span><span>
+</span><span id="line-109"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422296"><span class="annot"><span class="hs-identifier hs-type">ZipMatchK</span></span><span> </span><span class="annot"><a href="#local-6989586621679422296"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZipMatch</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Type%27Sig"><span class="hs-identifier hs-type">Type'Sig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422296"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424160"><span class="annot"><span class="annottext">zipMatch :: forall scope term scope' term'.
+Type'Sig a scope term
+-&gt; Type'Sig a scope' term'
+-&gt; Maybe (Type'Sig a (scope, scope') (term, term'))
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">zipMatch</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Type'Sig a scope term
+-&gt; Type'Sig a scope' term'
+-&gt; Maybe (Type'Sig a (scope, scope') (term, term'))
+forall (sig :: * -&gt; * -&gt; *) scope scope' term term'.
+(GenericK sig, GZipMatch (RepK sig),
+ ReqsZipMatch
+   (RepK sig)
+   (scope ':&amp;&amp;: (term ':&amp;&amp;: 'LoT0))
+   (scope' ':&amp;&amp;: (term' ':&amp;&amp;: 'LoT0))) =&gt;
+sig scope term
+-&gt; sig scope' term' -&gt; Maybe (sig (scope, scope') (term, term'))
+</span><span class="hs-identifier hs-var">genericZipMatch2</span></span><span>
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- &gt;&gt;&gt; &quot;?m[App(Lam(x.x), Lam(y.y))]&quot; :: Term' Raw.BNFC'Position Foil.VoidS</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- ?m [App (Lam (x0 . x0), Lam (x0 . x0))]</span><span>
+</span><span id="line-114"></span><span class="hs-comment">-- &gt;&gt;&gt; &quot;Lam(y. Let(Lam(x. x), f. ?m[y, App(f, y)]))&quot; :: Term' Raw.BNFC'Position Foil.VoidS</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- Lam (x0 . Let (Lam (x1 . x1), x1 . ?m [x0, App (x1, x0)]))</span><span>
+</span><span id="line-116"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Term%27"><span class="hs-identifier hs-type">Term'</span></a></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#BNFC%27Position"><span class="hs-identifier hs-type">Raw.BNFC'Position</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foil.VoidS</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-117"></span><span>  </span><span id="local-6989586621679424168"><span class="annot"><span class="annottext">fromString :: String -&gt; Term' BNFC'Position 'VoidS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+-&gt; Map VarIdent (Name 'VoidS)
+-&gt; Term' BNFC'Position
+-&gt; Term' BNFC'Position 'VoidS
+forall (o :: S) a.
+(Distinct o, Ord VarIdent) =&gt;
+Scope o -&gt; Map VarIdent (Name o) -&gt; Term' a -&gt; Term' a o
+</span><a href="Language.SOAS.Impl.Generated.html#toTerm%27"><span class="hs-identifier hs-var">toTerm'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+</span><span class="hs-identifier hs-var">Foil.emptyScope</span></span><span> </span><span class="annot"><span class="annottext">Map VarIdent (Name 'VoidS)
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span> </span><span class="annot"><span class="annottext">(Term' BNFC'Position -&gt; Term' BNFC'Position 'VoidS)
+-&gt; (String -&gt; Term' BNFC'Position)
+-&gt; String
+-&gt; Term' BNFC'Position 'VoidS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([Token] -&gt; Either String (Term' BNFC'Position))
+-&gt; String -&gt; Term' BNFC'Position
+forall a. ([Token] -&gt; Either String a) -&gt; String -&gt; a
+</span><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-var">unsafeParse</span></a></span><span> </span><span class="annot"><span class="annottext">[Token] -&gt; Either String (Term' BNFC'Position)
+</span><a href="Language.SOAS.Syntax.Par.html#pTerm"><span class="hs-identifier hs-var">Raw.pTerm</span></a></span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Type%27"><span class="hs-identifier hs-type">Type'</span></a></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#BNFC%27Position"><span class="hs-identifier hs-type">Raw.BNFC'Position</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foil.VoidS</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-120"></span><span>  </span><span id="local-6989586621679424177"><span class="annot"><span class="annottext">fromString :: String -&gt; Type' BNFC'Position 'VoidS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+-&gt; Map VarIdent (Name 'VoidS)
+-&gt; Type' BNFC'Position
+-&gt; Type' BNFC'Position 'VoidS
+forall (o :: S) a.
+(Distinct o, Ord VarIdent) =&gt;
+Scope o -&gt; Map VarIdent (Name o) -&gt; Type' a -&gt; Type' a o
+</span><a href="Language.SOAS.Impl.Generated.html#toType%27"><span class="hs-identifier hs-var">toType'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+</span><span class="hs-identifier hs-var">Foil.emptyScope</span></span><span> </span><span class="annot"><span class="annottext">Map VarIdent (Name 'VoidS)
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span> </span><span class="annot"><span class="annottext">(Type' BNFC'Position -&gt; Type' BNFC'Position 'VoidS)
+-&gt; (String -&gt; Type' BNFC'Position)
+-&gt; String
+-&gt; Type' BNFC'Position 'VoidS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([Token] -&gt; Either String (Type' BNFC'Position))
+-&gt; String -&gt; Type' BNFC'Position
+forall a. ([Token] -&gt; Either String a) -&gt; String -&gt; a
+</span><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-var">unsafeParse</span></a></span><span> </span><span class="annot"><span class="annottext">[Token] -&gt; Either String (Type' BNFC'Position)
+</span><a href="Language.SOAS.Syntax.Par.html#pType"><span class="hs-identifier hs-var">Raw.pType</span></a></span><span>
+</span><span id="line-121"></span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-123"></span><span class="hs-comment">-- &gt;&gt;&gt; &quot;Lam : &#8704; a b. (a.b) &#8594; a&#8594;b&quot; :: OpTyping' Raw.BNFC'Position Foil.VoidS</span><span>
+</span><span id="line-124"></span><span class="hs-comment">-- Lam : &#8704; x0 x1 . (x0 . x1) &#8594; x0 &#8594; x1</span><span>
+</span><span id="line-125"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#OpTyping%27"><span class="hs-identifier hs-type">OpTyping'</span></a></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#BNFC%27Position"><span class="hs-identifier hs-type">Raw.BNFC'Position</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foil.VoidS</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-126"></span><span>  </span><span id="local-6989586621679424183"><span class="annot"><span class="annottext">fromString :: String -&gt; OpTyping' BNFC'Position 'VoidS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+-&gt; Map VarIdent (Name 'VoidS)
+-&gt; OpTyping' BNFC'Position
+-&gt; OpTyping' BNFC'Position 'VoidS
+forall (o :: S) a.
+(Distinct o, Ord VarIdent) =&gt;
+Scope o -&gt; Map VarIdent (Name o) -&gt; OpTyping' a -&gt; OpTyping' a o
+</span><a href="Language.SOAS.Impl.Generated.html#toOpTyping%27"><span class="hs-identifier hs-var">toOpTyping'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+</span><span class="hs-identifier hs-var">Foil.emptyScope</span></span><span> </span><span class="annot"><span class="annottext">Map VarIdent (Name 'VoidS)
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span> </span><span class="annot"><span class="annottext">(OpTyping' BNFC'Position -&gt; OpTyping' BNFC'Position 'VoidS)
+-&gt; (String -&gt; OpTyping' BNFC'Position)
+-&gt; String
+-&gt; OpTyping' BNFC'Position 'VoidS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([Token] -&gt; Either String (OpTyping' BNFC'Position))
+-&gt; String -&gt; OpTyping' BNFC'Position
+forall a. ([Token] -&gt; Either String a) -&gt; String -&gt; a
+</span><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-var">unsafeParse</span></a></span><span> </span><span class="annot"><span class="annottext">[Token] -&gt; Either String (OpTyping' BNFC'Position)
+</span><a href="Language.SOAS.Syntax.Par.html#pOpTyping"><span class="hs-identifier hs-var">Raw.pOpTyping</span></a></span><span>
+</span><span id="line-127"></span><span>
+</span><span id="line-128"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- &gt;&gt;&gt; &quot;?m[x y] &#8614; App(y, x)&quot; :: Subst' Raw.BNFC'Position Foil.VoidS</span><span>
+</span><span id="line-130"></span><span class="hs-comment">-- ?m [x0 x1] &#8614; App (x1, x0)</span><span>
+</span><span id="line-131"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Subst%27"><span class="hs-identifier hs-type">Subst'</span></a></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#BNFC%27Position"><span class="hs-identifier hs-type">Raw.BNFC'Position</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foil.VoidS</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-132"></span><span>  </span><span id="local-6989586621679424189"><span class="annot"><span class="annottext">fromString :: String -&gt; Subst' BNFC'Position 'VoidS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+-&gt; Map VarIdent (Name 'VoidS)
+-&gt; Subst' BNFC'Position
+-&gt; Subst' BNFC'Position 'VoidS
+forall (o :: S) a.
+(Distinct o, Ord VarIdent) =&gt;
+Scope o -&gt; Map VarIdent (Name o) -&gt; Subst' a -&gt; Subst' a o
+</span><a href="Language.SOAS.Impl.Generated.html#toSubst%27"><span class="hs-identifier hs-var">toSubst'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+</span><span class="hs-identifier hs-var">Foil.emptyScope</span></span><span> </span><span class="annot"><span class="annottext">Map VarIdent (Name 'VoidS)
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span> </span><span class="annot"><span class="annottext">(Subst' BNFC'Position -&gt; Subst' BNFC'Position 'VoidS)
+-&gt; (String -&gt; Subst' BNFC'Position)
+-&gt; String
+-&gt; Subst' BNFC'Position 'VoidS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([Token] -&gt; Either String (Subst' BNFC'Position))
+-&gt; String -&gt; Subst' BNFC'Position
+forall a. ([Token] -&gt; Either String a) -&gt; String -&gt; a
+</span><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-var">unsafeParse</span></a></span><span> </span><span class="annot"><span class="annottext">[Token] -&gt; Either String (Subst' BNFC'Position)
+</span><a href="Language.SOAS.Syntax.Par.html#pSubst"><span class="hs-identifier hs-var">Raw.pSubst</span></a></span><span>
+</span><span id="line-133"></span><span>
+</span><span id="line-134"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-135"></span><span class="hs-comment">-- &gt;&gt;&gt; &quot;&#8704; x y. ?m[x, y] = App(y, x)&quot; :: Constraint' Raw.BNFC'Position Foil.VoidS</span><span>
+</span><span id="line-136"></span><span class="hs-comment">-- &#8704; x0 x1 . ?m [x0, x1] = App (x1, x0)</span><span>
+</span><span id="line-137"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Constraint%27"><span class="hs-identifier hs-type">Constraint'</span></a></span><span> </span><span class="annot"><a href="Language.SOAS.Syntax.Abs.html#BNFC%27Position"><span class="hs-identifier hs-type">Raw.BNFC'Position</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foil.VoidS</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-138"></span><span>  </span><span id="local-6989586621679424195"><span class="annot"><span class="annottext">fromString :: String -&gt; Constraint' BNFC'Position 'VoidS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+-&gt; Map VarIdent (Name 'VoidS)
+-&gt; Constraint' BNFC'Position
+-&gt; Constraint' BNFC'Position 'VoidS
+forall (o :: S) a.
+(Distinct o, Ord VarIdent) =&gt;
+Scope o
+-&gt; Map VarIdent (Name o) -&gt; Constraint' a -&gt; Constraint' a o
+</span><a href="Language.SOAS.Impl.Generated.html#toConstraint%27"><span class="hs-identifier hs-var">toConstraint'</span></a></span><span> </span><span class="annot"><span class="annottext">Scope 'VoidS
+</span><span class="hs-identifier hs-var">Foil.emptyScope</span></span><span> </span><span class="annot"><span class="annottext">Map VarIdent (Name 'VoidS)
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span> </span><span class="annot"><span class="annottext">(Constraint' BNFC'Position -&gt; Constraint' BNFC'Position 'VoidS)
+-&gt; (String -&gt; Constraint' BNFC'Position)
+-&gt; String
+-&gt; Constraint' BNFC'Position 'VoidS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([Token] -&gt; Either String (Constraint' BNFC'Position))
+-&gt; String -&gt; Constraint' BNFC'Position
+forall a. ([Token] -&gt; Either String a) -&gt; String -&gt; a
+</span><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-var">unsafeParse</span></a></span><span> </span><span class="annot"><span class="annottext">[Token] -&gt; Either String (Constraint' BNFC'Position)
+</span><a href="Language.SOAS.Syntax.Par.html#pConstraint"><span class="hs-identifier hs-var">Raw.pConstraint</span></a></span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422311"><span id="local-6989586621679422312"><span id="local-6989586621679424198"><span id="local-6989586621679424203"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Term%27"><span class="hs-identifier hs-type">Term'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422311"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422312"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424208"><span class="annot"><span class="annottext">show :: Term' a n -&gt; String
+</span><a href="#local-6989586621679424208"><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Term' a -&gt; String
+forall a. Print a =&gt; a -&gt; String
+</span><a href="Language.SOAS.Syntax.Print.html#printTree"><span class="hs-identifier hs-var">Raw.printTree</span></a></span><span> </span><span class="annot"><span class="annottext">(Term' a -&gt; String)
+-&gt; (Term' a n -&gt; Term' a) -&gt; Term' a n -&gt; String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Term' a n -&gt; Term' a
+forall a (o :: S). Term' a o -&gt; Term' a
+</span><a href="Language.SOAS.Impl.Generated.html#fromTerm%27"><span class="hs-identifier hs-var">fromTerm'</span></a></span><span>
+</span><span id="line-141"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422318"><span id="local-6989586621679422319"><span id="local-6989586621679424212"><span id="local-6989586621679424217"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Type%27"><span class="hs-identifier hs-type">Type'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422318"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422319"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424221"><span class="annot"><span class="annottext">show :: Type' a n -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Type' a -&gt; String
+forall a. Print a =&gt; a -&gt; String
+</span><a href="Language.SOAS.Syntax.Print.html#printTree"><span class="hs-identifier hs-var">Raw.printTree</span></a></span><span> </span><span class="annot"><span class="annottext">(Type' a -&gt; String)
+-&gt; (Type' a n -&gt; Type' a) -&gt; Type' a n -&gt; String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Type' a n -&gt; Type' a
+forall a (o :: S). Type' a o -&gt; Type' a
+</span><a href="Language.SOAS.Impl.Generated.html#fromType%27"><span class="hs-identifier hs-var">fromType'</span></a></span><span>
+</span><span id="line-142"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422323"><span id="local-6989586621679422324"><span id="local-6989586621679424223"><span id="local-6989586621679424228"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Subst%27"><span class="hs-identifier hs-type">Subst'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422323"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422324"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424232"><span class="annot"><span class="annottext">show :: Subst' a n -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Subst' a -&gt; String
+forall a. Print a =&gt; a -&gt; String
+</span><a href="Language.SOAS.Syntax.Print.html#printTree"><span class="hs-identifier hs-var">Raw.printTree</span></a></span><span> </span><span class="annot"><span class="annottext">(Subst' a -&gt; String)
+-&gt; (Subst' a n -&gt; Subst' a) -&gt; Subst' a n -&gt; String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Subst' a n -&gt; Subst' a
+forall a (o :: S). Subst' a o -&gt; Subst' a
+</span><a href="Language.SOAS.Impl.Generated.html#fromSubst%27"><span class="hs-identifier hs-var">fromSubst'</span></a></span><span>
+</span><span id="line-143"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422328"><span id="local-6989586621679422329"><span id="local-6989586621679424234"><span id="local-6989586621679424239"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#Constraint%27"><span class="hs-identifier hs-type">Constraint'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422328"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422329"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424243"><span class="annot"><span class="annottext">show :: Constraint' a n -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Constraint' a -&gt; String
+forall a. Print a =&gt; a -&gt; String
+</span><a href="Language.SOAS.Syntax.Print.html#printTree"><span class="hs-identifier hs-var">Raw.printTree</span></a></span><span> </span><span class="annot"><span class="annottext">(Constraint' a -&gt; String)
+-&gt; (Constraint' a n -&gt; Constraint' a) -&gt; Constraint' a n -&gt; String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Constraint' a n -&gt; Constraint' a
+forall a (o :: S). Constraint' a o -&gt; Constraint' a
+</span><a href="Language.SOAS.Impl.Generated.html#fromConstraint%27"><span class="hs-identifier hs-var">fromConstraint'</span></a></span><span>
+</span><span id="line-144"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679422333"><span id="local-6989586621679422334"><span id="local-6989586621679424245"><span id="local-6989586621679424250"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Language.SOAS.Impl.Generated.html#OpTyping%27"><span class="hs-identifier hs-type">OpTyping'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422333"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679422334"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679424254"><span class="annot"><span class="annottext">show :: OpTyping' a n -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpTyping' a -&gt; String
+forall a. Print a =&gt; a -&gt; String
+</span><a href="Language.SOAS.Syntax.Print.html#printTree"><span class="hs-identifier hs-var">Raw.printTree</span></a></span><span> </span><span class="annot"><span class="annottext">(OpTyping' a -&gt; String)
+-&gt; (OpTyping' a n -&gt; OpTyping' a) -&gt; OpTyping' a n -&gt; String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">OpTyping' a n -&gt; OpTyping' a
+forall a (o :: S). OpTyping' a o -&gt; OpTyping' a
+</span><a href="Language.SOAS.Impl.Generated.html#fromOpTyping%27"><span class="hs-identifier hs-var">fromOpTyping'</span></a></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="annot"><span class="hs-comment">-- * User-defined helpers</span></span><span>
+</span><span id="line-147"></span><span>
+</span><span id="line-148"></span><span id="local-6989586621679422306"><span class="annot"><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-type">unsafeParse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="annot"><a href="Language.SOAS.Syntax.Lex.html#Token"><span class="hs-identifier hs-type">Raw.Token</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><a href="#local-6989586621679422306"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679422306"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-149"></span><span id="unsafeParse"><span class="annot"><span class="annottext">unsafeParse :: forall a. ([Token] -&gt; Either String a) -&gt; String -&gt; a
+</span><a href="Language.SOAS.Impl.Generated.html#unsafeParse"><span class="hs-identifier hs-var hs-var">unsafeParse</span></a></span></span><span> </span><span id="local-6989586621679424257"><span class="annot"><span class="annottext">[Token] -&gt; Either String a
+</span><a href="#local-6989586621679424257"><span class="hs-identifier hs-var">parse</span></a></span></span><span> </span><span id="local-6989586621679424258"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679424258"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-150"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Token] -&gt; Either String a
+</span><a href="#local-6989586621679424257"><span class="hs-identifier hs-var">parse</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; [Token]
+</span><a href="Language.SOAS.Syntax.Par.html#myLexer"><span class="hs-identifier hs-var">Raw.myLexer</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679424258"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-151"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679424260"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679424260"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; a
+forall a. HasCallStack =&gt; String -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679424260"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-152"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679424262"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679424262"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679424262"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-153"></span></pre></body></html>
